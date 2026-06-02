@@ -5,6 +5,12 @@ All notable changes to Stitcher are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-06-02
+
+### Changed
+
+- Documentation and changelog housekeeping. No functional changes.
+
 ## [1.1.1] - 2026-06-02
 
 ### Added
@@ -45,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README and documentation updates on top of the 1.0.0 feature set. Tagged out
   of semantic order; superseded by 1.1.0.
 
+[1.1.2]: https://github.com/mihaelamj/Stitcher/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/mihaelamj/Stitcher/compare/1.1.0...1.1.1
 [1.1.0]: https://github.com/mihaelamj/Stitcher/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/mihaelamj/Stitcher/releases/tag/1.0.0
