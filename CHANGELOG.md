@@ -38,6 +38,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build and run on macOS, iOS, and Linux (`URLSession` gated behind
   `FoundationNetworking` on Linux).
 
+## [0.1.0] - 2026-05-02
+
+### Added
+
+- README and documentation updates on top of the 1.0.0 feature set. Tagged out
+  of semantic order; superseded by 1.1.0.
+
 [Unreleased]: https://github.com/mihaelamj/Stitcher/compare/1.1.0...HEAD
 [1.1.0]: https://github.com/mihaelamj/Stitcher/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/mihaelamj/Stitcher/releases/tag/1.0.0
+[0.1.0]: https://github.com/mihaelamj/Stitcher/releases/tag/0.1.0
