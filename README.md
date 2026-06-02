@@ -2,10 +2,12 @@
 
 Swift library that resolves external `$ref` references in multi-file/multi-folder OpenAPI specs and stitches them into a single document.
 
-[![CI](https://github.com/mihaelamj/Stitcher/actions/workflows/ci.yml/badge.svg)](https://github.com/mihaelamj/Stitcher/actions/workflows/ci.yml)
+[![macOS](https://github.com/mihaelamj/Stitcher/actions/workflows/macos.yml/badge.svg)](https://github.com/mihaelamj/Stitcher/actions/workflows/macos.yml)
+[![Linux](https://github.com/mihaelamj/Stitcher/actions/workflows/linux.yml/badge.svg)](https://github.com/mihaelamj/Stitcher/actions/workflows/linux.yml)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmihaelamj%2FStitcher%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/mihaelamj/Stitcher)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmihaelamj%2FStitcher%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/mihaelamj/Stitcher)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
 ## Features
 
@@ -115,6 +117,16 @@ do {
 }
 ```
 
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup,
+conventions, and the PR workflow. By participating you agree to the
+[Code of Conduct](CODE_OF_CONDUCT.md).
+
+- **Need help?** See [SUPPORT.md](SUPPORT.md).
+- **Found a security issue?** Do not open a public issue. See [SECURITY.md](SECURITY.md).
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
-MIT
+Released under the [MIT License](LICENSE).
