@@ -5,6 +5,25 @@ All notable changes to Stitcher are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-06-23
+
+### Changed
+
+- Replace the Yams dependency with the pure-Swift
+  [PureYAML](https://github.com/mihaelamj/PureYAML) parser/emitter. This removes
+  the bundled libYaml C sources and lets Stitcher build for WebAssembly
+  (`wasm32-wasip1`) in addition to macOS, Linux, and Windows.
+- The resolver now operates on PureYAML's ordered value tree, so emitted YAML
+  preserves document key order instead of alphabetising keys, and scalars are
+  emitted plain where unambiguous.
+
+### Added
+
+- `StitcherError.networkingUnavailable(URL)`, thrown when a remote `$ref` is
+  encountered on a platform without `URLSession` (for example `wasm32-wasi`),
+  where the embedding host is expected to supply remote documents. Local file
+  and in-memory stitching are unaffected.
+
 ## [1.1.2] - 2026-06-02
 
 ### Changed

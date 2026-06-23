@@ -2,6 +2,8 @@
 
 Swift library that resolves external `$ref` references in multi-file/multi-folder OpenAPI specs and stitches them into a single document.
 
+Stitcher is the resolver layer behind tools like [OpenAPIDoctor](https://github.com/mihaelamj/OpenAPIDoctor): use it when an OpenAPI spec is scattered across YAML or JSON files and needs to be inspected, validated, repaired, or passed into generation as one resolved document.
+
 [![macOS](https://github.com/mihaelamj/Stitcher/actions/workflows/macos.yml/badge.svg)](https://github.com/mihaelamj/Stitcher/actions/workflows/macos.yml)
 [![Linux](https://github.com/mihaelamj/Stitcher/actions/workflows/linux.yml/badge.svg)](https://github.com/mihaelamj/Stitcher/actions/workflows/linux.yml)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmihaelamj%2FStitcher%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/mihaelamj/Stitcher)

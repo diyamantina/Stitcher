@@ -4,12 +4,12 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
-import Yams
+import PureYAML
 
 /// Stitches multi-file OpenAPI specs into a single document.
 /// Resolves external $refs from local files and network URLs.
 public actor Stitcher {
-    private var cache: [String: Any] = [:]
+    private var cache: [String: PureYAML.Model.Value] = [:]
     private var resolving: Set<String> = []
 
     public init() {}
@@ -24,14 +24,14 @@ public actor Stitcher {
     public func stitch(from url: URL) async throws -> String {
         let content = try await fetchContent(from: url)
         let resolved = try await resolveDocument(content: content, baseURL: url)
-        return try serializeToYAML(resolved)
+        return serializeToYAML(resolved)
     }
 
     /// Stitch a spec from raw YAML/JSON content
     public func stitch(content: String, baseURL: URL? = nil) async throws -> String {
         let base = baseURL ?? URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
         let resolved = try await resolveDocument(content: content, baseURL: base)
-        return try serializeToYAML(resolved)
+        return serializeToYAML(resolved)
     }
 
     /// Clear the resolution cache
@@ -42,50 +42,57 @@ public actor Stitcher {
 
     // MARK: - Document Resolution
 
-    private func resolveDocument(content: String, baseURL: URL) async throws -> Any {
-        guard let parsed = try Yams.load(yaml: content) else {
-            throw StitcherError.parseError("Failed to parse YAML")
-        }
+    private func resolveDocument(content: String, baseURL: URL) async throws -> PureYAML.Model.Value {
+        let parsed = try parse(content, failureMessage: "Failed to parse YAML")
         return try await resolveValue(parsed, baseURL: baseURL)
     }
 
-    private func resolveValue(_ value: Any, baseURL: URL) async throws -> Any {
-        if let dict = value as? [String: Any] {
-            return try await resolveDictionary(dict, baseURL: baseURL)
-        } else if let array = value as? [Any] {
-            return try await resolveArray(array, baseURL: baseURL)
-        } else {
-            return value
+    private func resolveValue(_ value: PureYAML.Model.Value, baseURL: URL) async throws -> PureYAML.Model.Value {
+        // Extract the associated value through a non-async accessor before
+        // suspending. Binding an enum payload across the `await` in a
+        // `switch` trips a coroutine-splitting codegen crash in the Swift
+        // 6.2 compiler; this if-let form avoids it.
+        if let mapping = value.asMapping {
+            return try await resolveMapping(mapping, baseURL: baseURL)
         }
+        if let values = value.asSequence {
+            return try await resolveSequence(values, baseURL: baseURL)
+        }
+        return value
     }
 
-    private func resolveDictionary(_ dict: [String: Any], baseURL: URL) async throws -> Any {
-        if let ref = dict["$ref"] as? String {
+    private func resolveMapping(_ mapping: PureYAML.Model.Mapping, baseURL: URL) async throws -> PureYAML.Model.Value {
+        if case let .string(ref)? = mapping["$ref"] {
             // Internal ref (same document) - keep as is
             if ref.hasPrefix("#") {
-                return dict
+                return .mapping(mapping)
             }
             // External ref - resolve it
-            return try await resolveExternalRef(ref, baseURL: baseURL, originalDict: dict)
+            return try await resolveExternalRef(ref, baseURL: baseURL, originalMapping: mapping)
         }
 
-        // Not a $ref - recursively resolve all values
-        var result: [String: Any] = [:]
-        for (key, value) in dict {
-            result[key] = try await resolveValue(value, baseURL: baseURL)
+        // Not a $ref - recursively resolve all values, preserving order
+        var pairs: [PureYAML.Model.Pair] = []
+        for pair in mapping.pairs {
+            let resolved = try await resolveValue(pair.value, baseURL: baseURL)
+            pairs.append(PureYAML.Model.Pair(keyNode: pair.keyNode, value: resolved))
         }
-        return result
+        return .mapping(PureYAML.Model.Mapping(pairs))
     }
 
-    private func resolveArray(_ array: [Any], baseURL: URL) async throws -> [Any] {
-        var result: [Any] = []
-        for item in array {
+    private func resolveSequence(_ values: [PureYAML.Model.Value], baseURL: URL) async throws -> PureYAML.Model.Value {
+        var result: [PureYAML.Model.Value] = []
+        for item in values {
             result.append(try await resolveValue(item, baseURL: baseURL))
         }
-        return result
+        return .sequence(result)
     }
 
-    private func resolveExternalRef(_ ref: String, baseURL: URL, originalDict: [String: Any]) async throws -> Any {
+    private func resolveExternalRef(
+        _ ref: String,
+        baseURL: URL,
+        originalMapping: PureYAML.Model.Mapping
+    ) async throws -> PureYAML.Model.Value {
         let parts = ref.components(separatedBy: "#")
         let filePath = parts[0]
         let jsonPointer = parts.count > 1 ? "#" + parts[1] : nil
@@ -100,7 +107,7 @@ public actor Stitcher {
 
         // Check cache
         if let cached = cache[cacheKey] {
-            return try extractWithPointer(from: cached, pointer: jsonPointer, originalDict: originalDict)
+            return try extractWithPointer(from: cached, pointer: jsonPointer, originalMapping: originalMapping)
         }
 
         // Mark as resolving
@@ -109,9 +116,7 @@ public actor Stitcher {
 
         // Fetch and parse the referenced file
         let content = try await fetchContent(from: resolvedURL)
-        guard let parsed = try Yams.load(yaml: content) else {
-            throw StitcherError.parseError("Failed to parse: \(resolvedURL)")
-        }
+        let parsed = try parse(content, failureMessage: "Failed to parse: \(resolvedURL)")
 
         // Recursively resolve refs in the fetched content
         let resolved = try await resolveValue(parsed, baseURL: resolvedURL)
@@ -119,32 +124,39 @@ public actor Stitcher {
         // Cache the resolved content
         cache[cacheKey] = resolved
 
-        return try extractWithPointer(from: resolved, pointer: jsonPointer, originalDict: originalDict)
+        return try extractWithPointer(from: resolved, pointer: jsonPointer, originalMapping: originalMapping)
     }
 
-    private func extractWithPointer(from value: Any, pointer: String?, originalDict: [String: Any]) throws -> Any {
-        var result: Any = value
+    private func extractWithPointer(
+        from value: PureYAML.Model.Value,
+        pointer: String?,
+        originalMapping: PureYAML.Model.Mapping
+    ) throws -> PureYAML.Model.Value {
+        var result = value
 
-        if let pointer = pointer, pointer != "#" {
+        if let pointer, pointer != "#" {
             result = try navigateJSONPointer(value, pointer: pointer)
         }
 
-        // If the result is an array or scalar, return as-is
-        guard var dict = result as? [String: Any] else {
+        // If the result is anything but a mapping, return as-is
+        guard case let .mapping(mapping) = result else {
             return result
         }
 
-        // Merge any additional properties from the original dict (except $ref)
-        for (key, value) in originalDict where key != "$ref" {
-            if dict[key] == nil {
-                dict[key] = value
+        // Merge any additional properties from the original mapping (except $ref)
+        var pairs = mapping.pairs
+        let presentKeys = Set(mapping.pairs.compactMap(\.keyNode.stringValue))
+        for pair in originalMapping.pairs {
+            guard let key = pair.keyNode.stringValue, key != "$ref" else { continue }
+            if !presentKeys.contains(key) {
+                pairs.append(pair)
             }
         }
 
-        return dict
+        return .mapping(PureYAML.Model.Mapping(pairs))
     }
 
-    private func navigateJSONPointer(_ value: Any, pointer: String) throws -> Any {
+    private func navigateJSONPointer(_ value: PureYAML.Model.Value, pointer: String) throws -> PureYAML.Model.Value {
         var path = pointer
         if path.hasPrefix("#") {
             path = String(path.dropFirst())
@@ -164,19 +176,20 @@ public actor Stitcher {
                 .replacingOccurrences(of: "~0", with: "~")
         }
 
-        var current: Any = value
+        var current = value
         for component in components {
-            if let dict = current as? [String: Any] {
-                guard let next = dict[component] else {
+            switch current {
+            case let .mapping(mapping):
+                guard let next = mapping[component] else {
                     throw StitcherError.refNotFound(pointer)
                 }
                 current = next
-            } else if let array = current as? [Any], let index = Int(component) {
-                guard index >= 0 && index < array.count else {
+            case let .sequence(values):
+                guard let index = Int(component), index >= 0, index < values.count else {
                     throw StitcherError.refNotFound(pointer)
                 }
-                current = array[index]
-            } else {
+                current = values[index]
+            default:
                 throw StitcherError.refNotFound(pointer)
             }
         }
@@ -189,22 +202,29 @@ public actor Stitcher {
     private func fetchContent(from url: URL) async throws -> String {
         if url.isFileURL {
             return try String(contentsOf: url, encoding: .utf8)
-        } else {
-            let (data, response) = try await fetchData(from: url)
-
-            guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == 200 else {
-                throw StitcherError.fetchFailed(url)
-            }
-
-            guard let text = String(data: data, encoding: .utf8) else {
-                throw StitcherError.invalidEncoding(url)
-            }
-
-            return text
         }
+        #if canImport(Darwin) || canImport(FoundationNetworking)
+        let (data, response) = try await fetchData(from: url)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            throw StitcherError.fetchFailed(url)
+        }
+
+        guard let text = String(data: data, encoding: .utf8) else {
+            throw StitcherError.invalidEncoding(url)
+        }
+
+        return text
+        #else
+        // URLSession is unavailable on platforms without FoundationNetworking
+        // (notably wasm32-wasi). Remote `$ref` fetching is the embedding host's
+        // responsibility there; local file and in-memory stitching still work.
+        throw StitcherError.networkingUnavailable(url)
+        #endif
     }
 
+    #if canImport(Darwin) || canImport(FoundationNetworking)
     private func fetchData(from url: URL) async throws -> (Data, URLResponse) {
         try await withCheckedThrowingContinuation { continuation in
             let task = URLSession.shared.dataTask(with: url) { data, response, error in
@@ -219,6 +239,7 @@ public actor Stitcher {
             task.resume()
         }
     }
+    #endif
 
     private func resolveURL(_ ref: String, relativeTo base: URL) -> URL {
         if ref.hasPrefix("http://") || ref.hasPrefix("https://") {
@@ -229,39 +250,38 @@ public actor Stitcher {
         return baseDir.appendingPathComponent(ref).standardized
     }
 
-    // MARK: - Serialization
+    // MARK: - Parsing / Serialization
 
-    private func serializeToYAML(_ value: Any) throws -> String {
-        let node = try convertToNode(value)
-        return try Yams.serialize(node: node)
+    /// Parse YAML into a value tree, mapping any parser failure to a
+    /// ``StitcherError/parseError(_:)`` so callers see a stable error type.
+    private func parse(_ content: String, failureMessage: String) throws -> PureYAML.Model.Value {
+        do {
+            return try PureYAML.parse(content)
+        } catch {
+            throw StitcherError.parseError(failureMessage)
+        }
     }
 
-    private func convertToNode(_ value: Any) throws -> Node {
-        switch value {
-        case let string as String:
-            return Node.scalar(.init(string))
-        case let int as Int:
-            return Node.scalar(.init(String(int)))
-        case let double as Double:
-            return Node.scalar(.init(String(double)))
-        case let bool as Bool:
-            return Node.scalar(.init(bool ? "true" : "false"))
-        case let array as [Any]:
-            let nodes = try array.map { try convertToNode($0) }
-            return Node.sequence(.init(nodes))
-        case let dict as [String: Any]:
-            var pairs: [(Node, Node)] = []
-            for key in dict.keys.sorted() {
-                let keyNode = Node.scalar(.init(key))
-                let valueNode = try convertToNode(dict[key]!)
-                pairs.append((keyNode, valueNode))
-            }
-            return Node.mapping(.init(pairs))
-        case is NSNull:
-            return Node.scalar(.init("null"))
-        default:
-            return Node.scalar(.init(String(describing: value)))
-        }
+    /// Emit the resolved document. Plain (unquoted) scalars are used
+    /// wherever unambiguous, matching what Yams produced; PureYAML defaults
+    /// to fully quoted scalars otherwise. Key order follows the document
+    /// rather than being alphabetised.
+    private func serializeToYAML(_ value: PureYAML.Model.Value) -> String {
+        PureYAML.dump(value, options: PureYAML.Emitting.Options(scalarStyle: .plainWhenSafe))
+    }
+}
+
+// MARK: - Value accessors
+
+private extension PureYAML.Model.Value {
+    var asMapping: PureYAML.Model.Mapping? {
+        guard case let .mapping(mapping) = self else { return nil }
+        return mapping
+    }
+
+    var asSequence: [PureYAML.Model.Value]? {
+        guard case let .sequence(values) = self else { return nil }
+        return values
     }
 }
 
@@ -273,6 +293,7 @@ public enum StitcherError: Error, LocalizedError {
     case parseError(String)
     case circularReference(String)
     case refNotFound(String)
+    case networkingUnavailable(URL)
 
     public var errorDescription: String? {
         switch self {
@@ -280,6 +301,8 @@ public enum StitcherError: Error, LocalizedError {
             return "Failed to fetch: \(url)"
         case .invalidEncoding(let url):
             return "Invalid encoding: \(url)"
+        case .networkingUnavailable(let url):
+            return "Remote fetching is unavailable on this platform: \(url)"
         case .parseError(let message):
             return "Parse error: \(message)"
         case .circularReference(let path):

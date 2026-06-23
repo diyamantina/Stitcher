@@ -1,12 +1,12 @@
 {
   "pins" : [
     {
-      "identity" : "yams",
+      "identity" : "pureyaml",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/jpsim/Yams.git",
+      "location" : "https://github.com/mihaelamj/PureYAML.git",
       "state" : {
-        "revision" : "a27b21e0c81c5bf42049b897a62aaf387e80f279",
-        "version" : "6.2.2"
+        "revision" : "5d76d184cb12c59c9787c9b482fd918605481729",
+        "version" : "0.1.3"
       }
     }
   ],

@@ -15,12 +15,12 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/jpsim/Yams.git", "5.0.0" ..< "7.0.0")
+        .package(url: "https://github.com/mihaelamj/PureYAML.git", from: "0.1.3")
     ],
     targets: [
         .target(
             name: "Stitcher",
-            dependencies: ["Yams"]
+            dependencies: ["PureYAML"]
         ),
         .testTarget(
             name: "StitcherTests",
