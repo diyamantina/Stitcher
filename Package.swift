@@ -15,7 +15,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/mihaelamj/PureYAML.git", from: "0.1.4")
+        .package(url: "https://codeberg.org/Mihaela/PureYAML.git", from: "0.1.4")
     ],
     targets: [
         .target(
