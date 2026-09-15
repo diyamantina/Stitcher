@@ -9,7 +9,7 @@ on:
 jobs:
   test-linux:
     runs-on: ubuntu-latest
-    container: swift:6.0-jammy
+    container: swift:6.1-jammy
     steps:
       - uses: actions/checkout@v4
       - name: Build
