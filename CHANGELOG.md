@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Replace the Yams dependency with the pure-Swift
-  [PureYAML](https://github.com/mihaelamj/PureYAML) parser/emitter. This removes
+  [PureYAML](https://codeberg.org/Mihaela/PureYAML) parser/emitter. This removes
   the bundled libYaml C sources and lets Stitcher build for WebAssembly
   (`wasm32-wasip1`) in addition to macOS, Linux, and Windows.
 - The resolver now operates on PureYAML's ordered value tree, so emitted YAML
@@ -77,8 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README and documentation updates on top of the 1.0.0 feature set. Tagged out
   of semantic order; superseded by 1.1.0.
 
-[1.1.2]: https://github.com/mihaelamj/Stitcher/compare/1.1.1...1.1.2
-[1.1.1]: https://github.com/mihaelamj/Stitcher/compare/1.1.0...1.1.1
-[1.1.0]: https://github.com/mihaelamj/Stitcher/compare/1.0.0...1.1.0
-[1.0.0]: https://github.com/mihaelamj/Stitcher/releases/tag/1.0.0
-[0.1.0]: https://github.com/mihaelamj/Stitcher/releases/tag/0.1.0
+[1.1.2]: https://github.com/diyamantina/Stitcher/compare/1.1.1...1.1.2
+[1.1.1]: https://github.com/diyamantina/Stitcher/compare/1.1.0...1.1.1
+[1.1.0]: https://github.com/diyamantina/Stitcher/compare/1.0.0...1.1.0
+[1.0.0]: https://github.com/diyamantina/Stitcher/releases/tag/1.0.0
+[0.1.0]: https://github.com/diyamantina/Stitcher/releases/tag/0.1.0

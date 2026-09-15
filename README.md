@@ -2,12 +2,12 @@
 
 Swift library that resolves external `$ref` references in multi-file/multi-folder OpenAPI specs and stitches them into a single document.
 
-Stitcher is the resolver layer behind tools like [OpenAPIDoctor](https://github.com/mihaelamj/OpenAPIDoctor): use it when an OpenAPI spec is scattered across YAML or JSON files and needs to be inspected, validated, repaired, or passed into generation as one resolved document.
+Stitcher is the resolver layer behind tools like [OpenAPIDoctor](https://github.com/diyamantina/OpenAPIDoctor): use it when an OpenAPI spec is scattered across YAML or JSON files and needs to be inspected, validated, repaired, or passed into generation as one resolved document.
 
-[![macOS](https://github.com/mihaelamj/Stitcher/actions/workflows/macos.yml/badge.svg)](https://github.com/mihaelamj/Stitcher/actions/workflows/macos.yml)
-[![Linux](https://github.com/mihaelamj/Stitcher/actions/workflows/linux.yml/badge.svg)](https://github.com/mihaelamj/Stitcher/actions/workflows/linux.yml)
-[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmihaelamj%2FStitcher%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/mihaelamj/Stitcher)
-[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmihaelamj%2FStitcher%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/mihaelamj/Stitcher)
+[![macOS](https://github.com/diyamantina/Stitcher/actions/workflows/macos.yml/badge.svg)](https://github.com/diyamantina/Stitcher/actions/workflows/macos.yml)
+[![Linux](https://github.com/diyamantina/Stitcher/actions/workflows/linux.yml/badge.svg)](https://github.com/diyamantina/Stitcher/actions/workflows/linux.yml)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fdiyamantina%2FStitcher%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/diyamantina/Stitcher)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fdiyamantina%2FStitcher%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/diyamantina/Stitcher)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
@@ -26,7 +26,7 @@ Add to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/mihaelamj/Stitcher.git", from: "1.0.0")
+    .package(url: "https://github.com/diyamantina/Stitcher.git", from: "1.0.0")
 ]
 ```
 
