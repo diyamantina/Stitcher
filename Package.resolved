@@ -3,7 +3,7 @@
     {
       "identity" : "pureyaml",
       "kind" : "remoteSourceControl",
-      "location" : "https://codeberg.org/Mihaela/PureYAML.git",
+      "location" : "https://codeberg.org/NodetteHQ/PureYAML.git",
       "state" : {
         "revision" : "16a47df11875e687e1c2020ffa227d2d3635e622",
         "version" : "0.1.5"
