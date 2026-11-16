@@ -15,7 +15,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://git.aleahim.com/NodetteHQ/PureYAML.git", from: "0.1.4")
+        .package(url: "https://git.aleahim.com/NodetteHQ/PureYAML.git", branch: "main")
     ],
     targets: [
         .target(

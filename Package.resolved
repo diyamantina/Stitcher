@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://git.aleahim.com/NodetteHQ/PureYAML.git",
       "state" : {
-        "revision" : "16a47df11875e687e1c2020ffa227d2d3635e622",
-        "version" : "0.1.5"
+        "branch" : "main",
+        "revision" : "e87113c39174fc1fd3d4a826782184ccfbcab072"
       }
     }
   ],
